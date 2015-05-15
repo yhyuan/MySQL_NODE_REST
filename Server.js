@@ -1,3 +1,5 @@
+var fs = require('fs');
+var setting = JSON.parse(fs.readFileSync('setting.json').toString());
 var express = require("express");
 var mysql   = require("mysql");
 var bodyParser  = require("body-parser");
@@ -14,10 +16,10 @@ REST.prototype.connectMysql = function() {
     var self = this;
     var pool      =    mysql.createPool({
         connectionLimit : 100,
-        host     : 'localhost',
-        user     : 'root',
-        password : '',
-        database : 'restful_api_demo',
+        host     : setting.host,
+        user     : setting.user,
+        password : setting.password,
+        database : setting.database,
         debug    :  false
     });
     pool.getConnection(function(err,connection){
