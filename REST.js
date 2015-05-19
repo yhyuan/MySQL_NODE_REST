@@ -56,52 +56,32 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             var queryDevice = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", ["n" + closestDevice.device_id]);
             return queryWithPromise(connection, queryDevice);
         }).then(function (data) {
-            res.json({"Error" : false, "Message" : "Success", "Data" : data});
-        })
-        .catch(function (error) {
+            var latlngs = req.params.latlng.split(',');            
+            res.json({
+                "latitude": parseFloat(latlngs[0]),
+                "longitude": parseFloat(latlngs[1]),
+                "timezone": "Asia/Shanghai",
+                "offset": 8,
+                 "hourly": {
+                    "data": _.map(data, function(item) {
+                        return {
+                            "time": item.UploadTime.getTime()/1000, 
+                            "precipIntensity": item.rainfall,
+                            "temperature": item.airtemp,
+                            "humidity": item.airhumidity,
+                            "windSpeed": item.windspeed,
+                            "windBearing": item.winddirection,
+                            "pressure": item.atmosphericpressure,
+                            "soiltemp": item.soiltemp,
+                            "soilhumidity": item.soilhumidity
+                        };
+                    })
+                 }
+            });
+        }).catch(function (error) {
             res.json({"Error" : true, "Message" : "Success", "Data" : error});
         })
         .done();
-        /*connection.query(query,function(err,rows){
-            if(err) {
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                if (rows.length === 0) {
-                    res.json({"Error" : true, "Message" : "Wrong tokens"});
-                } else {
-                    var latlngIdx = req.params.latlng.indexOf(',');
-                    if (latlngIdx > 0) {
-                        var latlngs = req.params.latlng.split(',');
-                        var lat = parseFloat(latlngs[0]);
-                        var lng = parseFloat(latlngs[1]);
-                        query = mysql.format("SELECT * FROM device WHERE longitude > ? AND longitude < ? AND latitude > ? AND latitude < ?", [lng-0.1, lng+0.1, lat-0.1, lat+0.1]);
-                        connection.query(query,function(err, devices){
-                            if(err) {
-                                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-                            } else {
-                                if (rows.length === 0) {
-                                    res.json({"Error" : true, "Message" : "no data"});
-                                } else {
-                                    res.json({"Error" : false, "Message" : "Success", "Data" : devices});
-
-                                }
-
-                            }
-                        });                        
-
-                    } else {
-                        query = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", ["n" + req.params.latlng]);
-                        connection.query(query,function(err,rows){
-                            if(err) {
-                                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-                            } else {
-                                res.json({"Error" : false, "Message" : "Success", "Data" : rows});
-                            }
-                        });
-                    }
-                }
-            }
-        });*/
     });
 }
 
