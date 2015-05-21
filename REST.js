@@ -13,7 +13,7 @@ var queryWithPromise = function (connection, query) {
         if (err) {
             deferred.reject(err);
         };
-        if (rows.length === 0) {
+        if (!rows||(rows.length === 0)) {
           deferred.reject("No record!");  
         }
         deferred.resolve(rows);
@@ -28,7 +28,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         res.json({"Message" : "Hello World !"});
     });
     router.get("/data/:token/:latlng",function(req,res){
-        console.log(req.params.token);
+        //console.log(req.params.token);
         query = mysql.format("SELECT * FROM TOKEN WHERE token=?",[req.params.token]);
         queryWithPromise(connection, query).then(function (tokens) {
             var latlngs = req.params.latlng.split(',');
@@ -53,7 +53,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             var closestDevice = _.min(devices, function(device) {
                 return computeDistance({lat: parseFloat(latlngs[0]), lng: parseFloat(latlngs[1])}, {lat: device.latitude, lng: device.longitude});
             });
-            var queryDevice = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", ["n" + closestDevice.device_id]);
+            var queryDevice = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", [closestDevice.device_id]);
             return queryWithPromise(connection, queryDevice);
         }).then(function (data) {
             var latlngs = req.params.latlng.split(',');            
