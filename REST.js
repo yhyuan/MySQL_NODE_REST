@@ -81,7 +81,9 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }).catch(function (error) {
             res.json({"Error" : true, "Message" : "Success", "Data" : error});
         })
-        .done();
+        .done(function (results) {
+			connection.end();    
+		});
     });
 }
 
