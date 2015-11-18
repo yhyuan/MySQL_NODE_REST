@@ -11,6 +11,7 @@ var queryWithPromise = function (connection, query) {
     var deferred = Q.defer();
     connection.query(query, function(err, rows, fields) {
         if (err) {
+//console.log(query);
             deferred.reject(err);
         };
         if (!rows||(rows.length === 0)) {
@@ -28,15 +29,17 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         res.json({"Message" : "Hello World !"});
     });
     router.get("/data/:token/:latlng",function(req,res){
-        //console.log(req.params.token);
+//        console.log(req.params.token);
         query = mysql.format("SELECT * FROM TOKEN WHERE token=?",[req.params.token]);
         queryWithPromise(connection, query).then(function (tokens) {
+            //console.log(tokens);
             var latlngs = req.params.latlng.split(',');
             var lat = parseFloat(latlngs[0]);
             var lng = parseFloat(latlngs[1]);
             var queryLatLng = mysql.format("SELECT * FROM device WHERE longitude > ? AND longitude < ? AND latitude > ? AND latitude < ?", [lng-0.1, lng+0.1, lat-0.1, lat+0.1]);
             return queryWithPromise(connection, queryLatLng);
         }).then(function (devices) {
+            //console.log(tokens);
             var latlngs = req.params.latlng.split(',');
             var computeDistance = function (fromLatlng, toLatlng) {
                 var toRad = function (degree) {
@@ -53,7 +56,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             var closestDevice = _.min(devices, function(device) {
                 return computeDistance({lat: parseFloat(latlngs[0]), lng: parseFloat(latlngs[1])}, {lat: device.latitude, lng: device.longitude});
             });
-            var queryDevice = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", [closestDevice.device_id]);
+            var queryDevice = mysql.format("SELECT * FROM ?? ORDER BY UploadTime DESC LIMIT 100", ["" + closestDevice.device_id]);
             return queryWithPromise(connection, queryDevice);
         }).then(function (data) {
             var latlngs = req.params.latlng.split(',');            
@@ -81,9 +84,9 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }).catch(function (error) {
             res.json({"Error" : true, "Message" : "Success", "Data" : error});
         })
-        .done(function (results) {
-			connection.end();    
-		});
+        .done(function () {     
+//            connection.release();  
+         });
     });
 }
 
