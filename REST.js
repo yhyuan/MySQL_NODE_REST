@@ -29,7 +29,9 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         res.json({"Message" : "Hello World !"});
     });
     router.get("/data/:token/:latlng",function(req,res){
-//        console.log(req.params.token);
+        
+    });
+    router.get("/data/:token/:latlng",function(req,res){
         query = mysql.format("SELECT * FROM TOKEN WHERE token=?",[req.params.token]);
         queryWithPromise(connection, query).then(function (tokens) {
             //console.log(tokens);
@@ -39,7 +41,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             var queryLatLng = mysql.format("SELECT * FROM device WHERE longitude > ? AND longitude < ? AND latitude > ? AND latitude < ?", [lng-0.1, lng+0.1, lat-0.1, lat+0.1]);
             return queryWithPromise(connection, queryLatLng);
         }).then(function (devices) {
-            //console.log(tokens);
             var latlngs = req.params.latlng.split(',');
             var computeDistance = function (fromLatlng, toLatlng) {
                 var toRad = function (degree) {
